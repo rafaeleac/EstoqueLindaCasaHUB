@@ -34,7 +34,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 
       {/* Modal glasmorfo */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in-scale">
-        <div className="relative w-full max-w-md bg-card/70 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl p-8 dark:bg-slate-900/70">
+        <div className="relative w-full max-w-md bg-white/90 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl p-8 dark:bg-black/90">
           {/* Botão fechar */}
           <button
             onClick={() => onOpenChange(false)}
@@ -50,10 +50,9 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                 <LogIn className="h-6 w-6 text-accent-foreground" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-center font-display">Área de Vendas</h2>
+            <h2 className="text-2xl font-bold text-center font-display">Ambiente de Funcionários</h2>
             <p className="text-sm text-muted-foreground text-center mt-2">
-              Acesse a plataforma de vendas e relatórios
-            </p>
+              Aqui o acesso será restrito apenas para funcionários autorizados. Faça login para acessar. </p>
           </div>
 
           {/* Conteúdo */}
@@ -62,23 +61,23 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               <p className="text-xs text-muted-foreground mb-3 font-semibold">VOCÊ ESTÁ ACESSANDO COMO:</p>
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center text-sm font-bold text-accent-foreground">
-                  👤
+                  🦅
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">Usuário do Sistema</p>
-                  <p className="text-xs text-muted-foreground">Acesso Completo</p>
+                  <p className="font-semibold text-sm">Rafael David</p>
+                  <p className="text-xs text-muted-foreground">Acesso autorizado</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-muted-foreground">Funcionalidades disponíveis:</h3>
+              <h3 className="text-sm font-semibold text-muted-foreground">Funcionalidades:</h3>
               <ul className="space-y-2">
                 {[
-                  "📊 Dashboard de vendas",
-                  "💰 Histórico de transações",
-                  "🎯 Ranking de vendedores",
-                  "📈 Relatórios mensais",
+                  " Dashboard de vendas",
+                  " Histórico de transações",
+                  " Ranking de vendedores",
+                  " Relatórios mensais",
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-sm text-foreground">
                     <div className="h-2 w-2 rounded-full bg-primary" />
