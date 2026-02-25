@@ -17,15 +17,18 @@ import { SellDialog } from "./SellDialog";
 import { UserSelectionDialog } from "./UserSelectionDialog";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
 import { EditProductDialog } from "./EditProductDialog";
+import { AssistanceDialog } from "./AssistanceDialog";
 
-const statuses: ProductStatus[] = ["Disponível", "Vendido", "Pedido", "Reservado"];
+const statuses: ProductStatus[] = ["Disponível", "Vendido", "Pedido", "Reservado", "Assistência"];
 const units: StoreUnit[] = ["Shopping Praça Nova", "Camobi", "Estoque"];
 
 export function ProductActions({ product }: { product: Product }) {
   const { updateProductStatus, transferProduct, deleteProduct } = useInventory();
   const [showSellDialog, setShowSellDialog] = useState(false);
+  const [showAssistanceDialog, setShowAssistanceDialog] = useState(false);
   const [showUserDialog, setShowUserDialog] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<SystemUser | null>(null);
   const [pendingAction, setPendingAction] = useState<{
     type: "status" | "transfer";
     value: ProductStatus | StoreUnit;
@@ -34,6 +37,12 @@ export function ProductActions({ product }: { product: Product }) {
   const handleStatusChange = (status: ProductStatus) => {
     if (status === "Vendido") {
       setShowSellDialog(true);
+      return;
+    }
+    if (status === "Assistência") {
+      // Pede o usuário antes de abrir o diálogo de assistência
+      setShowUserDialog(true);
+      setPendingAction({ type: "status", value: status });
       return;
     }
     setPendingAction({ type: "status", value: status });
@@ -49,6 +58,12 @@ export function ProductActions({ product }: { product: Product }) {
     if (!pendingAction) return;
 
     if (pendingAction.type === "status") {
+      if (pendingAction.value === "Assistência") {
+        // Abre o diálogo de assistência em vez de atualizar diretamente
+        setSelectedUser(user);
+        setShowAssistanceDialog(true);
+        return;
+      }
       updateProductStatus(product.id, pendingAction.value as ProductStatus, user, reason);
     } else if (pendingAction.type === "transfer") {
       transferProduct(product.id, pendingAction.value as StoreUnit, user, reason);
@@ -120,6 +135,18 @@ export function ProductActions({ product }: { product: Product }) {
         product={product}
         open={showSellDialog}
         onOpenChange={setShowSellDialog}
+      />
+      <AssistanceDialog
+        product={product}
+        open={showAssistanceDialog}
+        onOpenChange={(open) => {
+          setShowAssistanceDialog(open);
+          if (!open) {
+            setPendingAction(null);
+            setSelectedUser(null);
+          }
+        }}
+        user={selectedUser || "ANA"}
       />
       <OrderDetailsDialog
         open={showOrderDialog}
