@@ -28,7 +28,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     <>
       {/* Backdrop com blur */}
       <div
-        className="fixed inset-0 z-40 backdrop-blur-md bg-black/20 animate-fade-in"
+        className="fixed inset-0 z-40 backdrop-blur-md bg-white/20 dark:bg-black/20 animate-fade-in"
         onClick={() => onOpenChange(false)}
       />
 
