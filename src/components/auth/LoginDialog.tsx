@@ -34,7 +34,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 
       {/* Modal glasmorfo */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in-scale">
-        <div className="relative w-full max-w-md bg-white/90 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl p-8 dark:bg-black/90">
+        <div className="relative w-full max-w-md bg-gray-100/90 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl p-8 dark:bg-black/90">
           {/* Botão fechar */}
           <button
             onClick={() => onOpenChange(false)}
