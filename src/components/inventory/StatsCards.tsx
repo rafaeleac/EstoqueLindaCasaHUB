@@ -1,5 +1,5 @@
 import { useInventory } from "@/contexts/InventoryContext";
-import { Package, CheckCircle, Clock, ShoppingBag, MapPin } from "lucide-react";
+import { Package, CheckCircle, Clock, ShoppingBag, MapPin, Truck, HeadsetIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const iconMap = {
@@ -7,6 +7,8 @@ const iconMap = {
   available: CheckCircle,
   sold: ShoppingBag,
   ordered: Clock,
+  pendingDeliveries: Truck,
+  assistance: HeadsetIcon,
 };
 
 export function StatsCards() {
@@ -18,16 +20,22 @@ export function StatsCards() {
     { label: "Disponíveis", value: stats.available, icon: "available" as const, color: "text-available" },
     { label: "Vendidos", value: stats.sold, icon: "sold" as const, color: "text-sold" },
     { label: "Pedidos (a caminho)", value: stats.ordered, icon: "ordered" as const, color: "text-ordered" },
+    { label: "Entregas Pendentes", value: stats.pendingDeliveries, icon: "pendingDeliveries" as const, color: "text-warning" },
+    { label: "Assistências", value: stats.assistanceCount, icon: "assistance" as const, color: "text-info" },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {cards.map(card => {
         const Icon = iconMap[card.icon];
-        // tornar alguns cards clicáveis (status filters)
-        const isClickable = ["Disponíveis", "Vendidos", "Pedidos (a caminho)"].includes(card.label);
+        // tornar alguns cards clicáveis (status filters ou navegação)
+        const isClickable = ["Disponíveis", "Vendidos", "Pedidos (a caminho)", "Entregas Pendentes"].includes(card.label);
         const handleClick = () => {
-          if (!isClickable) {
+          if (card.label === "Entregas Pendentes") {
+            navigate(`/entregas`);
+            return;
+          }
+          if (card.label.includes("Total")) {
             navigate(`/produtos`);
             return;
           }

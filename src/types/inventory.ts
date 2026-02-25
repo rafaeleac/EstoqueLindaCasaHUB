@@ -1,4 +1,4 @@
-export type ProductStatus = "Disponível" | "Vendido" | "Pedido" | "Reservado";
+export type ProductStatus = "Disponível" | "Vendido" | "Pedido" | "Reservado" | "Assistência";
 export type ProductCategory = "Sofá" | "Poltrona" | "Cadeira" | "Banqueta" | "Mesa" | "Outros";
 export type StoreUnit = "Shopping Praça Nova" | "Camobi" | "Estoque";
 
@@ -55,7 +55,7 @@ export interface SofaDetails {
 
 export interface HistoryEntry {
   id: string;
-  action: "CREATED" | "STATUS_CHANGED" | "TRANSFERRED" | "UPDATED" | "DELETED" | "DELIVERY_INFO_SET";
+  action: "CREATED" | "STATUS_CHANGED" | "TRANSFERRED" | "UPDATED" | "DELETED" | "DELIVERY_INFO_SET" | "ASSISTANCE_OPENED";
   user: SystemUser;
   timestamp: string;
   details: {
@@ -68,6 +68,9 @@ export interface HistoryEntry {
     newStatus?: string;
     oldUnit?: StoreUnit;
     newUnit?: StoreUnit;
+    assistenciaMotivo?: string;
+    assistenciaDataContato?: string;
+    assistenciaCliente?: string;
   };
 }
 
@@ -111,5 +114,10 @@ export interface Product {
   deliveryAccess?: "Escada" | "Elevador";
   deliveryStatus?: "Pendente" | "Em Rota" | "Entregue";
   deliveredAt?: string;
+  // Assistance information
+  assistenciaMotivo?: string;
+  assistenciaDataContato?: string;
+  assistenciaCliente?: string;
+  assistenciaAbertoEm?: string;
   history: HistoryEntry[];
 }

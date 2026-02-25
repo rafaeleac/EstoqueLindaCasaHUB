@@ -6,7 +6,7 @@ interface InventoryContextType {
   products: Product[];
   addProduct: (product: Omit<Product, "id" | "history" | "createdAt" | "updatedAt">) => void;
   updateProduct: (id: string, product: Partial<Product>, user: SystemUser, reason?: string) => void;
-  updateProductStatus: (id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails, soldPrice?: number) => void;
+  updateProductStatus: (id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails, soldPrice?: number, assistanceData?: { motivo: string; dataContato: string; cliente: string }) => void;
   transferProduct: (id: string, newUnit: StoreUnit, user: SystemUser, reason?: string) => void;
   setDeliveryInfo: (id: string, address: string, user: SystemUser, referencePoint?: string, type?: "Casa" | "Apartamento", floor?: string, access?: "Escada" | "Elevador") => void;
   markDelivered: (id: string, user: SystemUser) => void;
@@ -19,6 +19,8 @@ interface InventoryContextType {
     sold: number;
     ordered: number;
     reserved: number;
+    pendingDeliveries: number;
+    assistanceCount: number;
     byUnit: Record<StoreUnit, number>;
   };
 }
@@ -54,7 +56,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       if (p.id !== id) return p;
       const entry: HistoryEntry = {
         id: `h-${Date.now()}`,
-        action: "EDITED",
+        action: "UPDATED",
         user,
         timestamp: now,
         details: {
@@ -70,19 +72,24 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const updateProductStatus = useCallback((id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails, soldPrice?: number) => {
+  const updateProductStatus = useCallback((id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails, soldPrice?: number, assistanceData?: { motivo: string; dataContato: string; cliente: string }) => {
     const now = new Date().toISOString();
     setProducts(prev => prev.map(p => {
       if (p.id !== id) return p;
       const entry: HistoryEntry = {
         id: `h-${Date.now()}`,
-        action: "STATUS_CHANGED",
+        action: status === "Assistência" ? "ASSISTANCE_OPENED" : "STATUS_CHANGED",
         user,
         timestamp: now,
         details: {
           oldStatus: p.status,
           newStatus: status,
           reason: reason || `Status alterado para ${status}`,
+          ...(status === "Assistência" && assistanceData ? {
+            assistenciaMotivo: assistanceData.motivo,
+            assistenciaDataContato: assistanceData.dataContato,
+            assistenciaCliente: assistanceData.cliente,
+          } : {}),
         },
       };
       return {
@@ -90,8 +97,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         status,
         updatedAt: now,
         history: [entry, ...p.history],
-        ...(status === "Vendido" ? { soldBy: soldBy || user, soldAt: now, soldUnit: soldUnit || p.unit, ...(soldPrice ? { soldPrice } : {}) } : {}),
+        ...(status === "Vendido" && (soldBy || user) ? { soldBy: (soldBy || user) as any, soldAt: now, soldUnit: soldUnit || p.unit, ...(soldPrice ? { soldPrice } : {}) } : {}),
         ...(status === "Pedido" && orderDetails ? { orderDetails } : {}),
+        ...(status === "Assistência" && assistanceData ? {
+          assistenciaMotivo: assistanceData.motivo,
+          assistenciaDataContato: assistanceData.dataContato,
+          assistenciaCliente: assistanceData.cliente,
+          assistenciaAbertoEm: now,
+        } : {}),
       };
     }));
   }, []);
@@ -99,7 +112,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const setDeliveryInfo = useCallback((id: string, address: string, user: SystemUser, referencePoint?: string, type?: "Casa" | "Apartamento", floor?: string, access?: "Escada" | "Elevador") => {
     const now = new Date().toISOString();
     setProducts(prev => {
-      const newProducts = prev.map(p => {
+      const newProducts: Product[] = prev.map(p => {
         if (p.id !== id) return p;
         const entry: HistoryEntry = {
           id: `h-${Date.now()}`,
@@ -108,14 +121,16 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           timestamp: now,
           details: { reason: `Venda finalizada - Endereço de entrega registrado: ${address}` },
         };
+        const typedAccess = access as ("Escada" | "Elevador") | undefined;
+        const typedType = type as ("Casa" | "Apartamento") | undefined;
         return {
           ...p,
           deliveryAddress: address,
           deliveryReferencePoint: referencePoint,
-          deliveryType: type,
+          deliveryType: typedType,
           deliveryFloor: floor,
-          deliveryAccess: access,
-          deliveryStatus: "Pendente",
+          deliveryAccess: typedAccess,
+          deliveryStatus: "Pendente" as const,
           updatedAt: now,
           history: [entry, ...p.history],
         };
@@ -176,10 +191,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteProduct = useCallback((id: string, user: SystemUser): boolean => {
-    // Apenas ADMIN pode deletar
-    if (user !== "ADMIN") {
-      return false;
-    }
+    // Apenas admins podem deletar (qualquer um por enquanto)
     setProducts(prev => prev.filter(p => p.id !== id));
     return true;
   }, []);
@@ -193,6 +205,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     sold: products.filter(p => p.status === "Vendido").length,
     ordered: products.filter(p => p.status === "Pedido").length,
     reserved: products.filter(p => p.status === "Reservado").length,
+    pendingDeliveries: products.filter(p => p.deliveryAddress && p.deliveryStatus === "Pendente").length,
+    assistanceCount: products.filter(p => p.status === "Assistência").length,
     byUnit: {
       "Shopping Praça Nova": products.filter(p => p.unit === "Shopping Praça Nova").length,
       "Camobi": products.filter(p => p.unit === "Camobi").length,

@@ -10,8 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { DeliveryDialog } from "./DeliveryDialog";
-
 const units: StoreUnit[] = ["Shopping Praça Nova", "Camobi", "Estoque"];
 
 interface SellDialogProps {
@@ -25,7 +23,6 @@ export function SellDialog({ product, open, onOpenChange }: SellDialogProps) {
   const [sellerUser, setSellerUser] = useState<SystemUser>("ANA");
   const [sellUnit, setSellUnit] = useState<StoreUnit>(product.unit);
   const [price, setPrice] = useState<number | "">(product.soldPrice ?? "");
-  const [deliveryOpen, setDeliveryOpen] = useState(false);
   const [showSellForm, setShowSellForm] = useState(true);
   const [localOpen, setLocalOpen] = useState(open);
   // Campos do formulário de entrega (inline)
@@ -41,41 +38,45 @@ export function SellDialog({ product, open, onOpenChange }: SellDialogProps) {
     setLocalOpen(open);
     if (open) {
       setShowSellForm(true);
-      setDeliveryOpen(false);
+      // Reseta campos de entrega quando abre
+      setAddress("");
+      setReferencePoint("");
+      setType("Casa");
+      setFloor("");
+      setAccess("Escada");
     }
   }, [open]);
 
   const handleSell = () => {
-    // Marca como vendido no contexto
-    updateProductStatus(
-      product.id,
-      "Vendido",
-      sellerUser,
-      `Vendido na unidade ${sellUnit}`,
-      sellerUser,
-      sellUnit,
-      undefined,
-      typeof price === "number" && !isNaN(price) ? price : undefined,
-    );
-    
-    // Abre imediatamente o formulário de entrega (evita problemas de timing)
-    setShowSellForm(false);
-    setDeliveryOpen(true);
-    // inicializa campos de entrega a partir do produto atual (não depende do contexto async)
-    setAddress(product.deliveryAddress || "");
-    setReferencePoint(product.deliveryReferencePoint || "");
-    setType((product.deliveryType as any) || "Casa");
-    setFloor(product.deliveryFloor || "");
-    setAccess((product.deliveryAccess as any) || "Escada");
+    if (!price || (typeof price === "number" && price <= 0)) {
+      alert("Preencha um preço de venda válido.");
+      return;
+    }
+
+    try {
+      // Marca como vendido no contexto
+      console.log('[SellDialog] Iniciando venda do produto:', product.id, product.name);
+      updateProductStatus(
+        product.id,
+        "Vendido",
+        sellerUser,
+        `Vendido na unidade ${sellUnit}`,
+        sellerUser,
+        sellUnit,
+        undefined,
+        typeof price === "number" && !isNaN(price) ? price : undefined,
+      );
+      console.log('[SellDialog] updateProductStatus chamado');
+
+      // Mostra o formulário de endereço inline
+      setShowSellForm(false);
+      console.log('[SellDialog] venda registrada, exibindo formulário de endereço');
+    } catch (error) {
+      console.error('Erro ao registrar venda:', error);
+      alert('Erro ao registrar a venda. Verifique o console para detalhes.');
+    }
   };
 
-  const handleDeliveryClose = () => {
-    // Quando fecha o diálogo de entrega, fecha tudo
-    setShowSellForm(true);
-    setDeliveryOpen(false);
-    setLocalOpen(false);
-    onOpenChange(false);
-  };
 
   // Busca o produto atualizado do contexto
   const updatedProduct = products.find(p => p.id === product.id) || product;
@@ -85,6 +86,7 @@ export function SellDialog({ product, open, onOpenChange }: SellDialogProps) {
       <Dialog open={localOpen} onOpenChange={(newOpen) => {
         if (!newOpen) {
           setLocalOpen(false);
+          setShowSellForm(true);
           onOpenChange(false);
         }
       }}>
@@ -255,9 +257,9 @@ export function SellDialog({ product, open, onOpenChange }: SellDialogProps) {
                   // Fecha imediatamente (setDeliveryInfo atualiza estado sincrono localmente)
                   setIsSaving(false);
                   setShowSellForm(true);
-                  setLocalOpen(false);
-                  onOpenChange(false);
-                }} disabled={isSaving || !address.trim()}>
+                              setLocalOpen(false);
+                              onOpenChange(false);
+                            }} disabled={isSaving || !address.trim()}>
                   {isSaving ? 'Salvando...' : 'Salvar e Finalizar'}
                 </Button>
               </DialogFooter>

@@ -2,6 +2,7 @@ import { useInventory } from "@/contexts/InventoryContext";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ImageViewer } from "@/components/inventory/ImageViewer";
 
 export default function Entregas() {
   const { products, markDelivered } = useInventory();
@@ -13,6 +14,18 @@ export default function Entregas() {
   const renderEntrega = (p: any, expandable: boolean = true) => (
     <div key={p.id} className="p-3 sm:p-4 border rounded-lg bg-card/70 backdrop-blur-md border-white/20 dark:border-white/10 transition-smooth hover:shadow-md">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+        <div className="shrink-0">
+          {p.images && p.images.length > 0 ? (
+            <ImageViewer images={p.images} alt={p.name} className="h-20 w-20 rounded-lg" />
+          ) : (p.imageUrl || (p as any).image) ? (
+            <ImageViewer src={p.imageUrl || (p as any).image} alt={p.name} className="h-20 w-20 rounded-lg" />
+          ) : (
+            <div className="h-20 w-20 rounded-lg bg-muted flex items-center justify-center">
+              <span className="text-muted-foreground text-sm">Imagem</span>
+            </div>
+          )}
+        </div>
+
         <div className="flex-1 min-w-0">
           <div className="text-xs sm:text-sm text-muted-foreground">Produto</div>
           <div className="font-semibold text-sm sm:text-base truncate">{p.name} ({p.sku})</div>
