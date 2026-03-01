@@ -18,8 +18,26 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Space Grotesk', 'sans-serif'],
+        // use the macOS / iOS system font stack which resolves to SF Pro
+        // when available. keep fallbacks for other platforms.
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'SF Pro Text',
+          'SF Pro Display',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
+        ],
+        display: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'SF Pro Text',
+          'SF Pro Display',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
+        ],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -95,9 +113,68 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+      },
+      /* Design System Spacing Scale (4px base) */
+      spacing: {
+        px: "1px",
+        0: "0px",
+        "0.25": "1px",
+        0.5: "2px",
+        1: "4px",       /* --spacing-xs */
+        1.5: "6px",
+        2: "8px",       /* --spacing-sm */
+        2.5: "10px",
+        3: "12px",
+        3.5: "14px",
+        4: "16px",      /* --spacing-md */
+        5: "20px",
+        6: "24px",      /* --spacing-lg */
+        7: "28px",
+        8: "32px",      /* --spacing-xl */
+        9: "36px",
+        10: "40px",
+        11: "44px",
+        12: "48px",     /* --spacing-2xl */
+        14: "56px",
+        16: "64px",
+        20: "80px",
+        24: "96px",
+        28: "112px",
+        32: "128px",
+        36: "144px",
+        40: "160px",
+        44: "176px",
+        48: "192px",
+        52: "208px",
+        56: "224px",
+        60: "240px",
+        64: "256px",
+        72: "288px",
+        80: "320px",
+        96: "384px",
+      },
+      /* Design System Shadow System */
+      boxShadow: {
+        none: "none",
+        sm: "var(--shadow-sm)",
+        DEFAULT: "0 1px 3px rgba(0,0,0,0.1)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
+        xl: "var(--shadow-xl)",
+        inner: "inset 0 2px 4px rgba(0,0,0,0.06)",
+        /* Glass effects */
+        glass: "0 8px 24px rgba(0, 0, 0, 0.08)",
+      },
+      backdropBlur: {
+        none: "0",
+        sm: "blur(4px)",
+        DEFAULT: "blur(12px)",
+        md: "blur(16px)",
+        lg: "blur(20px)",
       },
       keyframes: {
         "accordion-down": {

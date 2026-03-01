@@ -8,8 +8,9 @@ interface InventoryContextType {
   updateProduct: (id: string, product: Partial<Product>, user: SystemUser, reason?: string) => void;
   updateProductStatus: (id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails, soldPrice?: number, assistanceData?: { motivo: string; dataContato: string; cliente: string }) => void;
   transferProduct: (id: string, newUnit: StoreUnit, user: SystemUser, reason?: string) => void;
-  setDeliveryInfo: (id: string, address: string, user: SystemUser, referencePoint?: string, type?: "Casa" | "Apartamento", floor?: string, access?: "Escada" | "Elevador") => void;
+  setDeliveryInfo: (id: string, address: string, user: SystemUser, referencePoint?: string, type?: "Casa" | "Apartamento", apartmentNumber?: string, floor?: string, access?: "Escada" | "Elevador") => void;
   markDelivered: (id: string, user: SystemUser) => void;
+  scheduleDelivery: (id: string, scheduledDate: string, user: SystemUser) => void;
   deleteProduct: (id: string, user: SystemUser) => boolean;
   getProductsByUnit: (unit: StoreUnit) => Product[];
   getProductsByStatus: (status: ProductStatus) => Product[];
@@ -109,7 +110,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const setDeliveryInfo = useCallback((id: string, address: string, user: SystemUser, referencePoint?: string, type?: "Casa" | "Apartamento", floor?: string, access?: "Escada" | "Elevador") => {
+  const setDeliveryInfo = useCallback((id: string, address: string, user: SystemUser, referencePoint?: string, type?: "Casa" | "Apartamento", apartmentNumber?: string, floor?: string, access?: "Escada" | "Elevador") => {
     const now = new Date().toISOString();
     setProducts(prev => {
       const newProducts: Product[] = prev.map(p => {
@@ -128,6 +129,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           deliveryAddress: address,
           deliveryReferencePoint: referencePoint,
           deliveryType: typedType,
+          deliveryApartmentNumber: apartmentNumber,
           deliveryFloor: floor,
           deliveryAccess: typedAccess,
           deliveryStatus: "Pendente" as const,
@@ -138,7 +140,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       try {
         const updated = newProducts.find(np => np.id === id);
         // eslint-disable-next-line no-console
-        console.log('[Inventory] setDeliveryInfo called', { id, address, user, referencePoint, type, floor, access, updated });
+        console.log('[Inventory] setDeliveryInfo called', { id, address, user, referencePoint, type, apartmentNumber, floor, access, updated });
       } catch (e) {
         // ignore
       }
@@ -165,6 +167,31 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         ...p,
         deliveryStatus: "Entregue",
         deliveredAt: now,
+        updatedAt: now,
+        history: [entry, ...p.history],
+      };
+    }));
+  }, []);
+
+  const scheduleDelivery = useCallback((id: string, scheduledDate: string, user: SystemUser) => {
+    const now = new Date().toISOString();
+    setProducts(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const entry: HistoryEntry = {
+        id: `h-${Date.now()}`,
+        action: "STATUS_CHANGED",
+        user,
+        timestamp: now,
+        details: { 
+          oldStatus: p.deliveryStatus || "Pendente",
+          newStatus: "Agendada",
+          reason: `Entrega agendada para ${scheduledDate}`
+        },
+      };
+      return {
+        ...p,
+        deliveryStatus: "Agendada",
+        scheduledDeliveryDate: scheduledDate,
         updatedAt: now,
         history: [entry, ...p.history],
       };
@@ -217,7 +244,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   return (
     <InventoryContext.Provider value={{
       products, addProduct, updateProduct, updateProductStatus, transferProduct, deleteProduct,
-      getProductsByUnit, getProductsByStatus, stats, setDeliveryInfo, markDelivered,
+      getProductsByUnit, getProductsByStatus, stats, setDeliveryInfo, markDelivered, scheduleDelivery,
     }}>
       {children}
     </InventoryContext.Provider>

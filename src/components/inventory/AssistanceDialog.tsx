@@ -84,7 +84,7 @@ export function AssistanceDialog({
             <Label htmlFor="motivo">Motivo da Assistência *</Label>
             <textarea
               id="motivo"
-              className="w-full rounded-lg border bg-card/70 backdrop-blur-md px-3 py-2 text-sm min-h-24 resize-none border-white/20 dark:border-white/10 transition-smooth focus:outline-none focus:ring-2 focus:ring-ring"
+              className="input-glass min-h-24 resize-none"
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
               placeholder="Ex: Defeito na estrutura frontal, problema com reclinável, etc."
@@ -99,7 +99,7 @@ export function AssistanceDialog({
             <input
               id="dataContato"
               type="date"
-              className="w-full rounded-lg border bg-card/70 backdrop-blur-md px-3 py-2 text-sm border-white/20 dark:border-white/10 transition-smooth focus:outline-none focus:ring-2 focus:ring-ring"
+              className="input-glass"
               value={dataContato}
               onChange={(e) => setDataContato(e.target.value)}
               disabled={isSaving}
@@ -111,7 +111,7 @@ export function AssistanceDialog({
             <input
               id="cliente"
               type="text"
-              className="w-full rounded-lg border bg-card/70 backdrop-blur-md px-3 py-2 text-sm border-white/20 dark:border-white/10 transition-smooth focus:outline-none focus:ring-2 focus:ring-ring"
+              className="input-glass"
               value={cliente}
               onChange={(e) => setCliente(e.target.value)}
               placeholder="Ex: João Silva"

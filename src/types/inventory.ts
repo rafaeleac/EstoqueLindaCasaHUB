@@ -110,10 +110,12 @@ export interface Product {
   deliveryAddress?: string;
   deliveryReferencePoint?: string;
   deliveryType?: "Casa" | "Apartamento";
+  deliveryApartmentNumber?: string;
   deliveryFloor?: string;
   deliveryAccess?: "Escada" | "Elevador";
-  deliveryStatus?: "Pendente" | "Em Rota" | "Entregue";
+  deliveryStatus?: "Pendente" | "Agendada" | "Em Rota" | "Entregue";
   deliveredAt?: string;
+  scheduledDeliveryDate?: string;
   // Assistance information
   assistenciaMotivo?: string;
   assistenciaDataContato?: string;
